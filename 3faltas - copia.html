@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Buscador de Faltas y Situaciones</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #89c2b4, #4f9faa);
+      color: #b36666;
+      margin: 0;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    input, select, button {
+      width: 100%;
+      max-width: 400px;
+      padding: 12px;
+      font-size: 16px;
+      border: 2px solid #aaa;
+      border-radius: 12px;
+      display: block;
+      margin: 10px auto;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    button {
+      background-color: #2980b9;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #1f6391;
+    }
+    .resultado {
+      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .item {
+      padding: 18px;
+      border-radius: 14px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+      transition: transform 0.3s ease-in-out;
+    }
+    .item:hover {
+      transform: scale(1.015);
+    }
+    .leve { border-left: 8px solid #2ecc71; background-color: #e9fcee; }
+    .grave { border-left: 8px solid #f39c12; background-color: #fff4e0; }
+    .muygrave { border-left: 8px solid #e74c3c; background-color: #ffecec; }
+    .tipo1 { border-left: 8px solid #3498db; background-color: #ecf6ff; }
+    .tipo2 { border-left: 8px solid #9b59b6; background-color: #f7ecfa; }
+    .tipo3 { border-left: 8px solid #c0392b; background-color: #fde8e8; }
+    strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #2c3e50;
+      font-size: 1.1rem;
+    }
+    .ocultar {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Buscador de Faltas y Situaciones</h2>
+
+<h3 style="text-align:center;">Buscar por palabra clave</h3>
+<input type="text" id="buscarGeneral" placeholder="Escribe una palabra clave..." oninput="filtrarTodo()">
+
+<h3 style="text-align:center;">Filtrar por tipo</h3>
+<select id="tipoFalta" onchange="filtrarTodo()">
+  <option value="">Filtrar faltas por tipo</option>
+  <option value="leve">Tipo 1 - Leve</option>
+  <option value="grave">Tipo 2 - Grave</option>
+  <option value="muygrave">Tipo 3 - Muy Grave</option>
+</select>
+
+<select id="tipoSituacion" onchange="filtrarTodo()">
+  <option value="">Filtrar situaciones por tipo</option>
+  <option value="1">Situación Tipo 1</option>
+  <option value="2">Situación Tipo 2</option>
+  <option value="3">Situación Tipo 3</option>
+</select>
+
+<button onclick="toggleSection('faltas')">Mostrar/Ocultar Faltas</button>
+<button onclick="toggleSection('situaciones')">Mostrar/Ocultar Situaciones</button>
+
+<div class="resultado">
+  <div id="faltasContainer"></div>
+  <div id="situacionesContainer"></div>
+</div>
+
+<script>
+const faltas = [
+
+ // LEVES
+  { tipo: "leve", texto: "Ausentarse o abstenerse de participar en actividades académicas sin justificación", accion: "Preparar una actividad relacionada con el tema abordado en clase." },
+  { tipo: "leve", texto: "Incumplir el horario establecido para asistir al centro educativo", accion: "Realizar una actividad de trabajo social en tiempo extraescolar." },
+  { tipo: "leve", texto: "No portar los materiales requeridos para las actividades académicas", accion: "Compromiso de traer los recursos solicitados; si es posible, se prestarán materiales." },
+  { tipo: "leve", texto: "Hacer uso inadecuado de los materiales, aulas y otros espacios institucionales", accion: "Realizar una actividad sobre el cuidado de los espacios institucionales." },
+  { tipo: "leve", texto: "No contribuir al aseo de la planta física y su entorno", accion: "Reflexión grupal sobre el aseo del entorno y creación de una campaña institucional de cuidado." },
+  { tipo: "leve", texto: "Incumplir con las actividades académicas o compromisos de convivencia", accion: "Cita a los acudientes para acompañamiento en el ambiente donde ocurrió la falta." },
+  { tipo: "leve", texto: "Utilizar accesorios no permitidos en el uniforme", accion: "Firma de compromiso en el observador y elaboración de un documento reflexivo sobre su impacto en la salud." },
+  { tipo: "leve", texto: "No prestar atención cuando un integrante de la comunidad educativa se dirige al estudiantado", accion: "Elaboración de una campaña en el aula sobre respeto y escucha activa." },
+  { tipo: "leve", texto: "Manifestaciones afectivas inapropiadas para el contexto escolar", accion: "Trabajo reflexivo conjunto entre estudiante, docente y familia sobre los límites en las relaciones afectivas." },
+  { tipo: "leve", texto: "Utilizar vocabulario o modales inadecuados", accion: "Investigación sobre el origen de la palabra mal utilizada y exposición del hallazgo." },
+  { tipo: "leve", texto: "Abordar inoportunamente la ruta escolar, quedarse de la ruta o transportarse sin permiso", accion: "Disculpa pública y diseño de una actividad sobre responsabilidad y seguridad en salidas pedagógicas." },
+  { tipo: "leve", texto: "Permanecer en la institución fuera del horario académico sin autorización", accion: "Presentarse con su acudiente ante el director de curso para establecer acuerdos." },
+  { tipo: "leve", texto: "Consumo inadecuado de los alimentos suministrados en la institución", accion: "Acompañamiento en el restaurante escolar y campaña sobre el buen uso de los alimentos." },
+  { tipo: "leve", texto: "Alterar el ambiente de clase con comportamientos que afectan el aprendizaje", accion: "Reflexión abordada en la asamblea de curso y liderazgo de una actividad pedagógica." },
+  { tipo: "leve", texto: "Vender comestibles o artículos en el centro educativo", accion: "Reflexión sobre las implicaciones del consumo de productos sin condiciones sanitarias adecuadas." },
+  { tipo: "leve", texto: "No entregar a tiempo circulares o citaciones enviadas por la institución", accion: "Presentarse con su acudiente para establecer acuerdos." },
+  { tipo: "leve", texto: "Incumplir de manera intencional con los protocolos de bioseguridad", accion: "Proceso de reflexión y si reincide, campaña sobre autocuidado y cumplimiento de protocolos." },
+  { tipo: "leve", texto: "Incumplir reiteradamente con los parámetros de convivencia digital", accion: "Reflexión y si reincide más de dos veces, campaña virtual sobre cumplimiento y consecuencias." },
+ 
+  // GRAVES
+  { tipo: "grave", texto: "Ausentarse del plantel en horas de estudio sin autorización", accion: "Realizar un escrito en horario extraescolar, bajo supervisión de su acudiente, sobre los conceptos trabajados durante la ausencia." },
+  { tipo: "grave", texto: "Ingresar al plantel, aulas u otros espacios por lugares no autorizados", accion: "Elaborar una campaña sobre la ley de irrupción en espacios públicos o privados." },
+  { tipo: "grave", texto: "Tomar objetos personales de compañeros/as o docentes sin autorización", accion: "Disculpa pública, participación en un taller sobre el valor de la honradez y creación de una estrategia web para promoverlo." },
+  { tipo: "grave", texto: "Intentar o hacer fraude en procesos académicos", accion: "Realizar el proceso de sustentación con acompañamiento de su acudiente." },
+  { tipo: "grave", texto: "Pertenecer o promover grupos que afecten el buen nombre o valores institucionales", accion: "Desarrollar una campaña sobre el horizonte y valores del colegio." },
+  { tipo: "grave", texto: "Jugar con objetos inapropiados fuera de las canchas, poniendo en riesgo la seguridad", accion: "Compromiso de no repetir la acción y campaña sobre juegos adecuados al contexto escolar." },
+  { tipo: "grave", texto: "Organizar o participar en juegos de azar y apuestas en el colegio", accion: "Diseñar y poner en práctica una propuesta de juegos lúdicos en tiempos de descanso con un grupo de primaria." },
+  { tipo: "grave", texto: "Usar el nombre del colegio para afectar su integridad y reputación", accion: "Investigar la historia del colegio, resaltando el origen de su nombre, y socializarlo en una asamblea de curso." },
+  { tipo: "grave", texto: "Uso indebido de dispositivos electrónicos que distraigan las labores académicas", accion: "Elaborar un folleto sobre las consecuencias del uso irresponsable de dispositivos." },
+  { tipo: "grave", texto: "Difundir propaganda política, religiosa o ideológica que distorsione valores éticos y morales", accion: "Realizar un cuadro comparativo sobre el perfil del estudiante y la información difundida." },
+  { tipo: "grave", texto: "Manipular el software y hardware de los equipos sin autorización", accion: "Aplicar la acción pedagógica recomendada por el equipo de mantenimiento de cómputo." },
+  { tipo: "grave", texto: "Uso inadecuado de internet con fines diferentes a los académicos", accion: "Campaña preventiva sobre los peligros cibernéticos para niños, niñas y adolescentes." },
+  { tipo: "grave", texto: "Promover prácticas psíquicas o parapsicológicas que afecten la comunidad", accion: "Elaborar una reseña sobre las consecuencias psicológicas y emocionales de dichas prácticas." },
+  { tipo: "grave", texto: "Suplantar o ayudar a suplantar la identidad de otra persona, presencial o virtualmente", accion: "Investigación sobre un caso de suplantación en el entorno y sus consecuencias legales." },
+  { tipo: "grave", texto: "Elaborar tatuajes o piercings dentro del colegio, atentando contra la integridad personal", accion: "Comunicación con acudientes y exposición sobre autocuidado y salubridad." },
+  { tipo: "grave", texto: "Copiar documentos o comercializar productos protegidos por derechos de autor", accion: "Infografía sobre derechos de autor y las implicaciones legales de vulnerarlos." },
+  { tipo: "grave", texto: "Actitudes y comportamientos que afecten la formación y el prestigio institucional", accion: "Se implementarán las acciones pedagógicas que la persona responsable del seguimiento a la falta, considere pertinente." },
+
+
+
+  // MUY GRAVES
+  { tipo: "muygrave", texto: "Porte o uso de armas y elementos peligrosos", accion: "Investigación sobre la legislación colombiana en torno al porte ilegal de armas, socializada con el equipo de dirección. Posible cancelación de matrícula según el debido proceso." },
+  { tipo: "muygrave", texto: "Participar en escándalo público o afectar la imagen institucional", accion: "Acción reparadora junto con su acudiente para resarcir el daño causado. Posible cancelación de matrícula según el debido proceso." },
+  { tipo: "muygrave", texto: "Agredir físicamente a un integrante de la institución con objetos peligrosos", accion: "Acto de reparación público hacia la persona agredida. Posible cancelación de matrícula según el debido proceso." },
+  { tipo: "muygrave", texto: "Participar en actos de vandalismo", accion: "Reparación y embellecimiento de los bienes afectados. Posible cancelación de matrícula según el debido proceso." },
+  { tipo: "muygrave", texto: "Difamar o vulnerar la privacidad de un integrante de la comunidad educativa", accion: "Acto de reparación público, elaboración de un informe sobre el derecho a la intimidad y buen nombre. Posible cancelación de matrícula según el debido proceso." },
+  { tipo: "muygrave", texto: "Practicar ritos que atenten contra la integridad humana", accion: "Investigación sobre las consecuencias emocionales y psicológicas de dichas prácticas, socializada en la comunidad educativa." },
+  { tipo: "muygrave", texto: "Presentarse en la institución bajo efectos de alcohol o sustancias psicoactivas", accion: "Elaboración de un estand sobre los efectos nocivos del consumo de estas sustancias, presentado en momentos de descanso o tiempos asignados. Posible cancelación de matrícula según el debido proceso." },
+  { tipo: "muygrave", texto: "Presentar comportamientos que afecten la formación y la imagen institucional no contemplados anteriormente", accion: "Aplicación de las acciones pedagógicas determinadas por la persona responsable del seguimiento a la falta." }
+];
+
+
+const situaciones = [
+    // Tipo 1
+  { tipo: "1", texto: "1. Alterar el clima escolar con acciones que afecten el trabajo pedagógico en los ambientes de aprendizaje." },
+  { tipo: "1", texto: "2. Responder a los conflictos de manera agresiva, ya sea física, verbal o escrita." },
+  { tipo: "1", texto: "3. Agredir verbalmente a cualquier integrante de la comunidad educativa mediante insultos, apodos ofensivos, burlas, amenazas o expresiones morbosas." },
+  { tipo: "1", texto: "4. Emplear gestos o actos irrespetuosos con connotación sexual." },
+  { tipo: "1", texto: "5. Excluir o señalar a personas de la comunidad por razones de género u orientación sexual." },
+  { tipo: "1", texto: "6. Generar agresiones físicas e interacciones que hostiguen o invadan el espacio íntimo de otra persona, con o sin contenido sexual." },
+  { tipo: "1", texto: "7. Difundir rumores sobre una persona que afecten su imagen e integridad." },
+  { tipo: "1", texto: "8. Emplear mentiras o comentarios malintencionados que afecten la integridad física, psicológica o moral de algún integrante de la comunidad educativa." },
+
+  // Tipo 2
+  { tipo: "2", texto: "1. Agredir físicamente a un integrante de la institución educativa con su propio cuerpo o con objetos." },
+  { tipo: "2", texto: "2. Amenazar de manera reiterada la integridad física, psicológica o moral de cualquier persona de la comunidad educativa." },
+  { tipo: "2", texto: "3. Participar en peleas o disputas dentro o fuera del Centro Educativo." },
+  { tipo: "2", texto: "4. Callar o hacerse cómplice de actos que atenten contra la integridad física o moral de un integrante de la comunidad educativa." },
+  { tipo: "2", texto: "5. Agredir reiteradamente a un integrante de la comunidad con contenido sexual." },
+  { tipo: "2", texto: "6. Emplear apodos y comentarios sexistas de manera recurrente." },
+  { tipo: "2", texto: "7. Tocamientos sexuales no consentidos." },
+  { tipo: "2", texto: "8. Mensajes sexuales ofensivos escritos en espacios públicos como baños, paredes, tableros y pupitres, considerados como acoso escolar." },
+  { tipo: "2", texto: "9. Uso de internet para amenazar o vulnerar la dignidad de un integrante de la comunidad (ciberbullying)." },
+  { tipo: "2", texto: "10. Manifestaciones que afecten el respeto por la integridad física y las expresiones sexuales de las personas." },
+
+  // Tipo 3
+  { tipo: "3", texto: "1. Atentar contra la integridad física, psicológica o moral de una persona de la comunidad educativa, constituyendo un delito." },
+  { tipo: "3", texto: "2. Plagio y alteración de documento público." },
+  { tipo: "3", texto: "3. Apoderarse de un bien ajeno con el propósito de obtener provecho, según el artículo 239 de la ley 599 de 2000." },
+  { tipo: "3", texto: "4. Comercializar o distribuir material con contenido sexual que involucre a un menor de edad o a un integrante de la comunidad educativa." },
+  { tipo: "3", texto: "5. Incitar a la pornografía infantil y la prostitución de un menor de edad dentro de la comunidad educativa." },
+  { tipo: "3", texto: "6. Participar en actos vandálicos que atenten contra personas, el patrimonio institucional o terceros." },
+  { tipo: "3", texto: "7. Tener, almacenar, facilitar, consumir, distribuir o vender bebidas alcohólicas, drogas o sustancias ilícitas dentro del centro educativo." },
+  { tipo: "3", texto: "8. Consumir bebidas alcohólicas o sustancias psicoactivas en espacios públicos cercanos a la institución, según el artículo 83 de la ley 1801." },
+  { tipo: "3", texto: "9. Utilizar la fuerza o el engaño para acceder a cualquier tipo de contacto sexual dentro o fuera de la institución." },
+  { tipo: "3", texto: "10. Amenazar, sobornar o extorsionar a un integrante de la comunidad educativa." },
+  { tipo: "3", texto: "11. Atentar contra la vida de una persona de la comunidad educativa." },
+  { tipo: "3", texto: "12. Participar en otros actos delictivos no contemplados en este listado que afecten la vida digna." }
+];
+
+function filtrarTodo() {
+  const query = document.getElementById('buscarGeneral').value.toLowerCase();
+  const tipoFalta = document.getElementById('tipoFalta').value;
+  const tipoSituacion = document.getElementById('tipoSituacion').value;
+
+  const faltasContainer = document.getElementById('faltasContainer');
+  const situacionesContainer = document.getElementById('situacionesContainer');
+
+  faltasContainer.innerHTML = '';
+  situacionesContainer.innerHTML = '';
+
+  const faltasFiltradas = faltas.filter(f =>
+    f.texto.toLowerCase().includes(query) && (tipoFalta === '' || f.tipo === tipoFalta)
+  );
+
+  const situacionesFiltradas = situaciones.filter(s =>
+    s.texto.toLowerCase().includes(query) && (tipoSituacion === '' || s.tipo === tipoSituacion)
+  );
+
+  faltasFiltradas.forEach(f => {
+    const div = document.createElement('div');
+    div.className = `item ${f.tipo}`;
+    div.innerHTML = `<strong>Falta (${f.tipo.toUpperCase()}):</strong> ${f.texto}<br><strong>Acción:</strong> ${f.accion}`;
+    faltasContainer.appendChild(div);
+  });
+
+  situacionesFiltradas.forEach(s => {
+    const div = document.createElement('div');
+    div.className = `item tipo${s.tipo}`;
+    div.innerHTML = `<strong>Situación (Tipo ${s.tipo}):</strong> ${s.texto}`;
+    situacionesContainer.appendChild(div);
+  });
+
+  if (faltasFiltradas.length === 0 && situacionesFiltradas.length === 0) {
+    const p = document.createElement('p');
+    p.textContent = 'No se encontraron coincidencias.';
+    faltasContainer.appendChild(p);
+  }
+}
+
+function toggleSection(sectionId) {
+  const container = document.getElementById(sectionId + 'Container');
+  container.classList.toggle('ocultar');
+}
+</script>
+
+</body>
+</html>
